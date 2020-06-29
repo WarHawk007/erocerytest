@@ -166,7 +166,7 @@ class Image(graphene.ObjectType):
         else:
             url = image.url
         # url = info.context.build_absolute_uri(url)
-        url = f"https://backend.erocery.com{url}"
+        url = f"http://192.168.100.114:8000{url}"
         return Image(url, alt)
 
 
