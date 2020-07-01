@@ -14,6 +14,8 @@ from ..account.i18n import I18nMixin
 from ..account.types import AddressInput
 from ..core.enums import WeightUnitsEnum
 from ..core.mutations import BaseMutation, ModelMutation
+from ..core.types import Upload
+from ..core.utils import validate_image_file
 from ..core.types.common import ShopError
 from ..decorators import one_of_permissions_required
 from ..product.types import Collection
@@ -136,7 +138,29 @@ class ShopAddressUpdate(BaseMutation, I18nMixin):
                 site_settings.company_address.delete()
         return ShopAddressUpdate(shop=Shop())
 
+class ShopBannerCreateInput(graphene.InputObjectType):
+    images = graphene.List(Upload)
+class ShopBannerCreate(BaseMutation):
+    message = graphene.String()
+    class Arguments:
+        input = ShopBannerCreateInput(description="Fields required to update site.")
 
+    class Meta:
+        description = "Updates site domain of the shop."
+        # permissions = ("site.manage_settings",)
+        error_type_class = ShopError
+        error_type_field = "shop_errors"
+    
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        data = data["input"]
+        images = info.context.FILES
+        for key in images:
+            image = images[key]
+            validate_image_file(image,"images")
+            site_models.SiteBanner.objects.create(image=image)
+
+        return ShopBannerCreate(message="Done")
 class ShopDomainUpdate(BaseMutation):
     shop = graphene.Field(Shop, description="Updated shop.")
 

@@ -735,8 +735,12 @@ class CheckoutComplete(BaseMutation):
 
         sms.send_sms(order.get_customer_phone(),
                      f"""Your order on Erocery has been confirmed.
-Order No {order.id}
+Order No. {order.id}
 For further inquiry or complaints please contact us on  +923302755559""")
+        sms.send_sms("03235222321",
+                     f"""New Order Received.
+Order No. {order.id}
+Amount {order.total_net.amount}""")
 
         # remove checkout after order is successfully paid
         checkout.delete()

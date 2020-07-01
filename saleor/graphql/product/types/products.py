@@ -540,7 +540,7 @@ class Product(CountableDjangoObjectType, MetadataObjectType):
         if image:
             url = get_product_image_thumbnail(image, size, method="thumbnail")
             alt = image.alt
-            return Image(alt=alt, url=f"http://192.168.100.114:8000{url}")
+            return Image(alt=alt, url=f"https://backend.erocery.com{url}")
             # return Image(alt=alt, url=info.context.build_absolute_uri(url))
         return None
 
@@ -956,7 +956,7 @@ class ProductImage(CountableDjangoObjectType):
             url = get_thumbnail(root.image, size, method="thumbnail")
         else:
             url = root.image.url
-        return f"http://192.168.100.114:8000{url}"
+        return f"https://backend.erocery.com{url}"
         # return info.context.build_absolute_uri(url)
 
     @staticmethod

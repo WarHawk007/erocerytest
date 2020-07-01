@@ -2,7 +2,7 @@ import graphene
 from django.core.exceptions import ValidationError
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from ....account.models import User
+from ....account.models import User,Address
 from ....core.taxes import zero_taxed_money
 from ....order import events, models
 from ....order.actions import (
@@ -19,6 +19,7 @@ from ....order.utils import get_valid_shipping_methods_for_order
 from ....payment import CustomPaymentChoices, PaymentError, gateway
 from ....websocket import channel
 from ...account.types import AddressInput
+from ...account.i18n import I18nMixin
 from ...core.mutations import (
     BaseMutation,
     ClearMetaBaseMutation,
@@ -31,7 +32,9 @@ from ...order.mutations.draft_orders import DraftOrderUpdate
 from ...order.types import Order, OrderEvent
 from ...shipping.types import ShippingMethod
 from ...rider.types import Rider
-from ....order import OrderStatus 
+from ....order import OrderStatus
+
+
 def clean_order_update_shipping(order, method):
     if not order.shipping_address:
         raise ValidationError(
@@ -141,13 +144,15 @@ class OrderUpdateInput(graphene.InputObjectType):
     user_email = graphene.String(description="Email address of the customer.")
     shipping_address = AddressInput(description="Shipping address of the customer.")
 
+
 class OrderAssignRiderInput(graphene.InputObjectType):
     orderid = graphene.String(description="order id.")
     riderid = graphene.String(description="rider id.")
 
+
 class OrderAssignRider(DraftOrderUpdate):
     class Arguments:
-       input = OrderAssignRiderInput(
+        input = OrderAssignRiderInput(
             required=True, description="Fields required to update an order."
         )
 
@@ -159,21 +164,23 @@ class OrderAssignRider(DraftOrderUpdate):
         error_type_field = "order_errors"
 
     @classmethod
-    def perform_mutation(cls,root, info, **data):
+    def perform_mutation(cls, root, info, **data):
         data = data["input"]
         riderid = graphene.Node.get_node_from_global_id(info, data["riderid"], Rider)
         order = graphene.Node.get_node_from_global_id(info, data["orderid"], Order)
-        #get order and update
+        # get order and update
         order.riderid = riderid
         order.status = OrderStatus.ASSIGNED
         order.save()
         if riderid.channel:
-            channel.send(channel_name=riderid.channel,message="New Order Assigned To You")
+            channel.send(channel_name=riderid.channel,
+                         message="New Order Assigned To You")
         return cls.success_response(order)
+
 
 class RiderAcceptOrder(DraftOrderUpdate):
     class Arguments:
-       input = OrderAssignRiderInput(
+        input = OrderAssignRiderInput(
             required=True, description="Fields required to update an order."
         )
 
@@ -185,22 +192,24 @@ class RiderAcceptOrder(DraftOrderUpdate):
         error_type_field = "order_errors"
 
     @classmethod
-    def perform_mutation(cls,root, info, **data):
+    def perform_mutation(cls, root, info, **data):
         data = data["input"]
         riderid = graphene.Node.get_node_from_global_id(info, data["riderid"], Rider)
         order = graphene.Node.get_node_from_global_id(info, data["orderid"], Order)
-        #get order and update
+        # get order and update
         order.riderid = riderid
         order.status = OrderStatus.ACCEPTED
         order.save()
-        return cls.success_response(order)       
+        return cls.success_response(order)
+
 
 class RiderRejectOrderInput(graphene.InputObjectType):
     orderid = graphene.String(description="order id.")
 
+
 class RiderRejectOrder(DraftOrderUpdate):
     class Arguments:
-       input = RiderRejectOrderInput(
+        input = RiderRejectOrderInput(
             required=True, description="Fields required to update an order."
         )
 
@@ -212,16 +221,18 @@ class RiderRejectOrder(DraftOrderUpdate):
         error_type_field = "order_errors"
 
     @classmethod
-    def perform_mutation(cls,root, info, **data):
+    def perform_mutation(cls, root, info, **data):
         data = data["input"]
         order = graphene.Node.get_node_from_global_id(info, data["orderid"], Order)
         channel_name = order.shopid.admin_subshop.channel
         if channel_name:
-            channel.send_admin(channel_name=channel_name,message="Order Rejected By Rider")
+            channel.send_admin(channel_name=channel_name,
+                               message="Order Rejected By Rider")
         order.riderid = None
         order.status = OrderStatus.UNFULFILLED
         order.save()
         return cls.success_response(order)
+
 
 class OrderUpdate(DraftOrderUpdate):
     class Arguments:
@@ -358,6 +369,34 @@ class OrderAddNote(BaseMutation):
             order=order, user=info.context.user, message=data.get("input")["message"]
         )
         return OrderAddNote(order=order, event=event)
+
+
+class paymentInput(graphene.InputObjectType):
+    payment_method = graphene.String()
+    amount = graphene.Int()
+
+class OrderCreateInput(graphene.InputObjectType):
+    product = graphene.ID(required=True, description="Product ID")
+    shipping_address = AddressInput(required=True, description="Order Addresss.")
+    payment = paymentInput(required=True, description="Payment For Order")
+
+class OrderCreate(BaseMutation,I18nMixin):
+    order = graphene.Field(Order, description="New Order.")
+
+    class Arguments:
+        input = OrderCreateInput()      
+
+    class Meta:
+        description = "Order Create"
+        error_type_class = OrderError
+        error_type_field = "order_errors"
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        data = data.get("input")
+        address = cls.validate_address(data.get("shipping_address"))
+        print(f"===================={address.city}===========")
+        return OrderCreate(order=None)
 
 
 class OrderCancel(BaseMutation):

@@ -120,12 +120,14 @@ def order_fulfilled(
     if order.status == OrderStatus.FULFILLED:
         manager.order_fulfilled(order)
 
+    # if notify_customer:
         sms.send_sms(order.get_customer_phone(),f"""EROCERY-Delivery Successful!
 
-Dear Valued Customer! Thank you for shopping with EROCERY.
+Dear Valued Customer! Thank you for shopping with EROCERY. 
 
 For more products visit us at: https://erocery.com/
 Or download our app: https://play.google.com/store/apps/details?id=com.rns.erocery&hl=en""")
+        # send_fulfillment_confirmation_to_customer(order, fulfillment, user)
 
 
 def order_shipping_updated(order: "Order"):

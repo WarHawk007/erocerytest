@@ -74,7 +74,7 @@ class OrderEvent(CountableDjangoObjectType):
         ):
             return root.user
         raise PermissionDenied()
-
+        
     @staticmethod
     def resolve_email(root: models.OrderEvent, _info):
         return root.parameters.get("email", None)
@@ -257,7 +257,7 @@ class OrderLine(CountableDjangoObjectType):
         if image:
             url = get_product_image_thumbnail(image, size, method="thumbnail")
             alt = image.alt
-            return Image(alt=alt, url=f"http://192.168.100.114:8000{url}")
+            return Image(alt=alt, url=f"https://backend.erocery.com{url}")
         return None
 
     @staticmethod
@@ -389,7 +389,7 @@ class Order(MetadataObjectType, CountableDjangoObjectType):
     def resolve_created(root: models.Order, _info):
         created = root.created.strftime("%Y-%m-%d %I:%M:%S %p")
         return created;
-
+    
     @staticmethod
     def resolve_rider(root: models.OrderEvent, info):
         return root.riderid

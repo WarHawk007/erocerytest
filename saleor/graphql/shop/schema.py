@@ -10,7 +10,8 @@ from .mutations import (
     ShopDomainUpdate,
     ShopFetchTaxRates,
     ShopSettingsUpdate,
-    SubShopCreate
+    SubShopCreate,
+    ShopBannerCreate
 )
 from .resolvers import (
     resolve_subshops
@@ -48,3 +49,4 @@ class ShopMutations(graphene.ObjectType):
     shop_settings_translate = ShopSettingsTranslate.Field()
     shop_address_update = ShopAddressUpdate.Field()
     sub_shop_create = SubShopCreate.Field()
+    shop_banner_create = ShopBannerCreate.Field()

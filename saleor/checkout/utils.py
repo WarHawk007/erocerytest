@@ -1167,7 +1167,7 @@ def create_order(*, checkout: Checkout, order_data: dict, user: User) -> Order:
     order_created(order=order, user=user)
 
     # Send the order confirmation email
-    send_order_confirmation.delay(order.pk, user.pk)
+    # send_order_confirmation.delay(order.pk, user.pk)
     return order
 
 

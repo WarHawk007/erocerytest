@@ -34,6 +34,7 @@ from .mutations.orders import (
     OrderCapture,
     OrderClearMeta,
     OrderClearPrivateMeta,
+    OrderCreate,
     OrderMarkAsPaid,
     OrderRefund,
     OrderUpdate,
@@ -121,7 +122,7 @@ class OrderQueries(graphene.ObjectType):
     def resolve_order(self, info, **data):
         return resolve_order(info, data.get("id"))
 
-    @one_of_permissions_required(["order.manage_orders","order.view_order"])
+    @one_of_permissions_required(["order.manage_orders", "order.view_order"])
     def resolve_orders(self, info, created=None, status=None, query=None, **_kwargs):
         return resolve_orders(info, created, status, query)
 
@@ -156,6 +157,7 @@ class OrderMutations(graphene.ObjectType):
     order_capture = OrderCapture.Field()
     order_clear_private_meta = OrderClearPrivateMeta.Field()
     order_clear_meta = OrderClearMeta.Field()
+    order_create = OrderCreate.Field()
     order_fulfillment_cancel = FulfillmentCancel.Field()
     order_fulfillment_create = FulfillmentCreate.Field()
     order_fulfillment_update_tracking = FulfillmentUpdateTracking.Field()

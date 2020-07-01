@@ -117,6 +117,12 @@ class SubShop(MetadataObjectType, CountableDjangoObjectType):
             "orders"
         ]
 
+class SiteBanner(graphene.ObjectType):
+    image = graphene.String()
+
+    @staticmethod
+    def resolve_image(root:site_models.SiteBanner, _info):
+        return root.image
 
 class Shop(graphene.ObjectType):
     geolocalization = graphene.Field(
@@ -159,6 +165,7 @@ class Shop(graphene.ObjectType):
     homepage_collection = graphene.Field(
         Collection, description="Collection displayed on homepage."
     )
+    banners = graphene.List(SiteBanner)
     languages = graphene.List(
         LanguageDisplay,
         description="List of the shops's supported languages.",
@@ -222,6 +229,11 @@ class Shop(graphene.ObjectType):
     @permission_required("site.manage_settings")
     def resolve_authorization_keys(_, _info):
         return site_models.AuthorizationKey.objects.all()
+    
+    @staticmethod
+    def resolve_banners(root:site_models.SiteBanner, _info):
+        return site_models.SiteBanner.objects.all()
+        
 
     @staticmethod
     def resolve_countries(_, _info, language_code=None):

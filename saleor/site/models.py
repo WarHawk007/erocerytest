@@ -8,6 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.validators import MaxLengthValidator, RegexValidator
 from django.db import models
 from django.utils.translation import pgettext_lazy
+from versatileimagefield.fields import VersatileImageField
 
 from ..core.utils.translations import TranslationProxy
 from ..core.weight import WeightUnits
@@ -109,6 +110,12 @@ class SiteSettings(models.Model):
 
     def available_backends(self):
         return self.authorizationkey_set.values_list("name", flat=True)
+
+
+class SiteBanner(models.Model):
+    image = VersatileImageField(
+        upload_to="banners", blank=True, null=True
+    )
 
 
 class SiteSettingsTranslation(models.Model):
