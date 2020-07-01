@@ -13,6 +13,8 @@ cairocffi==1.1.0
 cairosvg==2.4.2
 celery==4.3.0
 certifi==2019.9.11
+channels==2.4.0
+channels-redis==2.4.2
 cffi==1.12.3
 chardet==3.0.4
 cssselect2==0.2.2
@@ -26,6 +28,7 @@ django-babel==0.6.2
 django-bootstrap4==1.0.1
 django-cache-url==3.0.0
 django-countries==5.5
+django-cors-headers
 django-elasticsearch-dsl==0.5.1
 django-filter==2.2.0
 django-graphql-jwt==0.2.1
